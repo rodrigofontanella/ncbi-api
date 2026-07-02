@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from typing import Optional
-from app.ncbi_client import ncbi_client, NCBINotFoundError
+from app.ncbi_client import ncbi_client, NCBINotFoundError, NCBIUnavailableError
 from app.schemas import AssemblySummary, AssemblyListResponse, parse_assembly_summary
 
 router = APIRouter(prefix="/genomes", tags=["genomes"])
@@ -11,6 +11,8 @@ async def get_genome_by_accession(accession: str):
         raw = await ncbi_client.get_assembly_by_accession(accession)
     except NCBINotFoundError:
         raise HTTPException(status_code=404, detail=f"Assembly '{accession}' not found")
+    except NCBIUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     return parse_assembly_summary(raw)
 
 
@@ -22,6 +24,8 @@ async def get_genomes_by_taxid(
         data = await ncbi_client.get_assemblies_by_taxid(taxid, page_size, page_token)
     except NCBINotFoundError:
         raise HTTPException(status_code=404, detail=f"No assemblies found for taxid {taxid}")
+    except NCBIUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
     assemblies = [parse_assembly_summary(raw) for raw in data["reports"]]
     return AssemblyListResponse(
@@ -39,6 +43,8 @@ async def get_genomes_by_organism(
         data = await ncbi_client.get_assemblies_by_organism(organism_name, page_size, page_token)
     except NCBINotFoundError:
         raise HTTPException(status_code=404, detail=f"No assemblies found for organism '{organism_name}'")
+    except NCBIUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
     assemblies = [parse_assembly_summary(raw) for raw in data["reports"]]
     return AssemblyListResponse(
