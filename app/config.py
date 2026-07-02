@@ -1,10 +1,10 @@
-from pydantic_settings import BaseSettings
+# app/config.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     ncbi_api_key: str = ""
     ncbi_base_url: str = "https://api.ncbi.nlm.nih.gov/datasets/v2"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()
