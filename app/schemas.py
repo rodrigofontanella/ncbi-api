@@ -1,6 +1,6 @@
 # app/schemas.py
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import date, datetime
 
 
@@ -34,8 +34,18 @@ class AssemblyListResponse(BaseModel):
     next_page_token: Optional[str] = None
 
 
-# app/schemas.py — add this
-from typing import Dict
+class TopSpeciesEntry(BaseModel):
+    species_tax_id: int
+    example_organism_name: str
+    assembly_count: int
+
+
+class AssemblyQualityStats(BaseModel):
+    avg_contig_count: Optional[float] = None
+    median_contig_count: Optional[float] = None
+    contig_count_distribution: Dict[str, int]
+    avg_gc_percent: Optional[float] = None
+
 
 class OverviewStats(BaseModel):
     total_assemblies: int
