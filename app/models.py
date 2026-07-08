@@ -14,6 +14,7 @@ class Assembly(Base):
     accession: Mapped[str] = mapped_column(String, primary_key=True)
     organism_name: Mapped[str] = mapped_column(String, nullable=False)
     tax_id: Mapped[Optional[int]] = mapped_column(Integer)
+    species_tax_id: Mapped[Optional[int]] = mapped_column(Integer)
     assembly_level: Mapped[Optional[str]] = mapped_column(String)
     assembly_name: Mapped[Optional[str]] = mapped_column(String)
     submitter: Mapped[Optional[str]] = mapped_column(String)

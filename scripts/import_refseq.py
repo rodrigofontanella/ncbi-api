@@ -27,6 +27,7 @@ def parse_row(row: dict) -> dict:
         "accession": row["assembly_accession"],
         "organism_name": row["organism_name"],
         "tax_id": int(row["taxid"]) if na_to_none(row["taxid"]) else None,
+        "species_tax_id": int(row["species_taxid"]) if na_to_none(row["species_taxid"]) else None,
         "assembly_level": na_to_none(row["assembly_level"]),
         "assembly_name": na_to_none(row["asm_name"]),
         "submitter": na_to_none(row["asm_submitter"]),

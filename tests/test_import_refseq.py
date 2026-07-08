@@ -24,6 +24,7 @@ def make_raw_row(**overrides):
         "bioproject": "PRJNA57779",
         "biosample": "SAMN02604091",
         "taxid": "511145",
+        "species_taxid": "1260",
         "organism_name": "Escherichia coli str. K-12 substr. MG1655",
         "assembly_level": "Complete Genome",
         "asm_name": "ASM584v2",
@@ -44,6 +45,7 @@ def test_parse_row_maps_real_values_correctly():
     assert result["accession"] == "GCF_000005845.2"
     assert result["organism_name"] == "Escherichia coli str. K-12 substr. MG1655"
     assert result["tax_id"] == 511145
+    assert result["species_tax_id"] == 1260
     assert result["total_sequence_length"] == 4641652
     assert result["number_of_contigs"] == 1
     assert result["gc_percent"] == 51.0
