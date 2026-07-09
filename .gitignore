@@ -3,3 +3,17 @@ __pycache__/
 *.pyc
 .env
 data/
+
+# sensitive research data — never commit
+abundance.csv
+enrichment_audit.csv
+import_log.txt
+
+# secrets
+.env
+
+# local venv / caches
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
