@@ -17,3 +17,6 @@ venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+ncbi_db.sql
+*.sql
+unresolved_species.txt

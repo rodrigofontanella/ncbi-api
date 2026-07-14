@@ -1,12 +1,13 @@
 # app/routers/assemblies.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_, not_
 from typing import Optional
 
 from app.database import get_db
 from app.models import Assembly
 from app.schemas import AssemblyListResponse, AssemblySummary
+from app.routers.qc import PASSES, ENRICHED
 
 router = APIRouter(tags=["assemblies"])
 
@@ -18,6 +19,7 @@ async def browse_assemblies(
     submitter: Optional[str] = None,
     min_contigs: Optional[int] = None,
     max_contigs: Optional[int] = None,
+    passes_qc: Optional[bool] = None,
     limit: int = 20,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -44,6 +46,13 @@ async def browse_assemblies(
     if max_contigs is not None:
         query = query.where(Assembly.number_of_contigs <= max_contigs)
         count_query = count_query.where(Assembly.number_of_contigs <= max_contigs)
+
+    if passes_qc is not None:
+        # reuse the QC gate from the /qc router so thresholds stay single-sourced.
+        # passes_qc=false means "enriched but failing", not "not yet enriched".
+        qc_predicate = PASSES if passes_qc else and_(ENRICHED, not_(PASSES))
+        query = query.where(qc_predicate)
+        count_query = count_query.where(qc_predicate)
 
     total_count = await db.scalar(count_query)
 
