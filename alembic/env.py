@@ -36,6 +36,14 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+CATALOG_SCHEMAS = {None, "public", "staging", "core", "prov", "rag", "ref"}
+
+def include_name(name, type_, parent_names):
+    if type_ == "schema":
+        return name in CATALOG_SCHEMAS      # None = the default schema
+    return True
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -54,6 +62,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        include_name=include_name,
     )
 
     with context.begin_transaction():
@@ -61,7 +71,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, include_schemas=True, include_name=include_name)
 
     with context.begin_transaction():
         context.run_migrations()

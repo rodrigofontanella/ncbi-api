@@ -1,4 +1,6 @@
 # app/models.py
+from sqlalchemy import Text, ForeignKey, Identity, CheckConstraint, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import String, Integer, BigInteger, Numeric, Date, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -8,8 +10,32 @@ from datetime import date, datetime
 class Base(DeclarativeBase):
     pass
 
+
+class IngestRun(Base):
+    __tablename__ = "ingest_run"
+    __table_args__ = (
+        CheckConstraint("source IN ('ncbi','microbeatlas','micoda','pgmd','bacdive','europepmc','docs','manual','own')",
+                        name="ingest_run_source_check"),
+        {"schema": "prov"},
+    )
+
+    ingest_run_id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    source: Mapped[str] = mapped_column(Text, nullable=False)
+    source_release: Mapped[Optional[str]] = mapped_column(Text)
+    params: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    raw_uri: Mapped[Optional[str]] = mapped_column(Text)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
 class Assembly(Base):
-    __tablename__ = "assemblies"
+    """Genome metadata, stored in ref.genome. Class name kept so routers and scripts don't change."""
+    __tablename__ = "genome"
+    __table_args__ = (
+        CheckConstraint("source IN ('ncbi','pigc','upgg','gtdb')", name="genome_source_check"),
+        CheckConstraint("domain IN ('Bacteria','Archaea','Fungi','Other')", name="genome_domain_check"),
+        {"schema": "ref"},
+    )
 
     accession: Mapped[str] = mapped_column(String, primary_key=True)
     organism_name: Mapped[str] = mapped_column(String, nullable=False)
@@ -30,3 +56,11 @@ class Assembly(Base):
     ani_best_match_organism: Mapped[Optional[str]] = mapped_column(String)
     ani_best_match_percent: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
     cached_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    source: Mapped[str] = mapped_column(Text, nullable=False, server_default="ncbi")
+    domain: Mapped[Optional[str]] = mapped_column(Text)
+    gtdb_taxonomy: Mapped[Optional[str]] = mapped_column(Text)
+    gtdb_release: Mapped[Optional[str]] = mapped_column(Text)
+    file_path: Mapped[Optional[str]] = mapped_column(Text)
+    sha256: Mapped[Optional[str]] = mapped_column(Text)
+    ingest_run_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger, ForeignKey("prov.ingest_run.ingest_run_id", name="genome_ingest_run_fk"))
